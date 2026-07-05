@@ -1,4 +1,117 @@
-Codigo,Item,Selecao,Status
-AUT1,Emblem Austria,Austria,nao_tenho
-POR15,Cristiano Ronaldo,Portugal,tenho
-...
+import pandas as pd
+import io
+
+# Dados brutos fornecidos anteriormente, do México até à Argélia (padrão)
+# E o resto da lista até à Argentina CocaCola
+raw_data = """MEX1,Emblem Mexico,Mexico,foil,0.00,False
+MEX20,Player,Mexico,player,0.00,False
+RSA1,Emblem South Africa,South Africa,foil,0.00,False
+RSA20,Player,South Africa,player,0.00,False
+KOR1,Emblem South Korea,South Korea,foil,0.00,False
+KOR20,Player,South Korea,player,0.00,False
+CZE1,Emblem Czechia,Czechia,foil,0.00,False
+CZE20,Player,Czechia,player,0.00,False
+CAN1,Emblem Canada,Canada,foil,0.00,False
+CAN20,Player,Canada,player,0.00,False
+BIH1,Emblem Bosnia,Bosnia,foil,0.00,False
+BIH20,Player,Bosnia,player,0.00,False
+QAT1,Emblem Qatar,Qatar,foil,0.00,False
+QAT20,Player,Qatar,player,0.00,False
+SUI1,Emblem Switzerland,Switzerland,foil,0.00,False
+SUI20,Player,Switzerland,player,0.00,False
+BRA1,Emblem Brazil,Brazil,foil,0.00,False
+BRA20,Player,Brazil,player,0.00,False
+MAR1,Emblem Morocco,Morocco,foil,0.00,False
+MAR20,Player,Morocco,player,0.00,False
+HAI1,Emblem Haiti,Haiti,foil,0.00,False
+HAI20,Player,Haiti,player,0.00,False
+SCO1,Emblem Scotland,Scotland,foil,0.00,False
+SCO20,Player,Scotland,player,0.00,False
+USA1,Emblem USA,USA,foil,0.00,False
+USA20,Player,USA,player,0.00,False
+PAR1,Emblem Paraguay,Paraguay,foil,0.00,False
+PAR20,Player,Paraguay,player,0.00,False
+AUS1,Emblem Australia,Australia,foil,0.00,False
+AUS20,Player,Australia,player,0.00,False
+TUR1,Emblem Turkiye,Turkiye,foil,0.00,False
+TUR20,Player,Turkiye,player,0.00,False
+GER1,Emblem Germany,Germany,foil,0.00,False
+GER20,Player,Germany,player,0.00,False
+CUW1,Emblem Curacao,Curacao,foil,0.00,False
+CUW20,Player,Curacao,player,0.00,False
+CIV1,Emblem Ivory Coast,Ivory Coast,foil,0.00,False
+CIV20,Player,Ivory Coast,player,0.00,False
+ECU1,Emblem Ecuador,Ecuador,foil,0.00,False
+ECU20,Player,Ecuador,player,0.00,False
+NED1,Emblem Netherlands,Netherlands,foil,0.00,False
+NED20,Player,Netherlands,player,0.00,False
+JPN1,Emblem Japan,Japan,foil,0.00,False
+JPN20,Player,Japan,player,0.00,False
+SWE1,Emblem Sweden,Sweden,foil,0.00,False
+SWE20,Player,Sweden,player,0.00,False
+TUN1,Emblem Tunisia,Tunisia,foil,0.00,False
+TUN20,Player,Tunisia,player,0.00,False
+BEL1,Emblem Belgium,Belgium,foil,0.00,False
+BEL20,Player,Belgium,player,0.00,False
+EGY1,Emblem Egypt,Egypt,foil,0.00,False
+EGY20,Player,Egypt,player,0.00,False
+IRN1,Emblem Iran,Iran,foil,0.00,False
+IRN20,Player,Iran,player,0.00,False
+NZL1,Emblem New Zealand,New Zealand,foil,0.00,False
+NZL20,Player,New Zealand,player,0.00,False
+ESP1,Emblem Spain,Spain,foil,0.00,False
+ESP20,Player,Spain,player,0.00,False
+CPV1,Emblem Cape Verde,Cape Verde,foil,0.00,False
+CPV20,Player,Cape Verde,player,0.00,False
+KSA1,Emblem Saudi Arabia,Saudi Arabia,foil,0.00,False
+KSA20,Player,Saudi Arabia,player,0.00,False
+URU1,Emblem Uruguay,Uruguay,foil,0.00,False
+URU20,Player,Uruguay,player,0.00,False
+FRA1,Emblem France,France,foil,0.00,False
+FRA20,Player,France,player,0.00,False
+SEN1,Emblem Senegal,Senegal,foil,0.00,False
+SEN20,Player,Senegal,player,0.00,False
+IRQ1,Emblem Iraq,Iraq,foil,0.00,False
+IRQ20,Player,Iraq,player,0.00,False
+NOR1,Emblem Norway,Norway,foil,0.00,False
+NOR20,Player,Norway,player,0.00,False
+ARG1,Emblem Argentina,Argentina,foil,0.00,False
+ARG17,Lionel Messi,Argentina,player,4.68,False
+ARG20,Player,Argentina,player,0.00,False
+ALG1,Emblem Algeria,Algeria,foil,0.00,False
+ALG20,Mohammed Amoura,Algeria,player,0.00,False
+AUT1,Emblem Austria,Austria,foil,0.39,False
+AUT20,Marko Arnautović,Austria,player,1.13,False
+JOR1,Emblem Jordan,Jordan,foil,1.82,False
+JOR20,Ibrahim Sabra,Jordan,player,1.46,False
+POR1,Emblem Portugal,Portugal,foil,1.79,False
+POR15,Cristiano Ronaldo,Portugal,player,3.99,False
+POR20,Rafael Leão,Portugal,player,1.65,False
+COD1,Emblem Congo DR,Congo DR,foil,0.76,False
+COD20,Nathanaël Mbuku,Congo DR,player,1.72,False
+UZB1,Emblem Uzbekistan,Uzbekistan,foil,1.72,False
+UZB20,Abbosbek Fayzullaev,Uzbekistan,player,1.54,False
+COL1,Emblem Colombia,Colombia,foil,1.34,False
+COL20,Luis Diaz,Colombia,player,1.66,False
+ENG1,Emblem England,England,foil,1.98,False
+ENG20,Ollie Watkins,England,player,1.65,False
+CRO1,Emblem Croatia,Croatia,foil,0.41,False
+CRO20,Franjo Ivanovic,Croatia,player,1.61,False
+GHA1,Emblem Ghana,Ghana,foil,0.26,False
+GHA20,Antoine Semenyo,Ghana,player,1.64,False
+PAN1,Emblem Panama,Panama,foil,0.42,False
+PAN20,Alberto Quintero,Panama,player,1.62,False
+FWC9,Italy 1934,History,foil,1.83,False
+FWC19,Argentina 2022,History,foil,1.98,False
+CC-US1,Lamine Yamal,Spain,CocaCola-US,2.06,False
+CC-US12,Gabriel Magalhães,Brazil,CocaCola-US,5.56,False
+CC-LAM1,Lamine Yamal,Spain,CocaCola-LAM,1.42,False
+CC-LAM14,Lautaro Martínez,Argentina,CocaCola-LAM,1.24,False
+CC-RW1,Lamine Yamal,Spain,CocaCola-RW,7.41,False
+CC-RW14,Lautaro Martínez,Argentina,CocaCola-RW,1.18,False"""
+
+# Criar DataFrame
+df = pd.read_csv(io.StringIO(raw_data), names=["Codigo", "Item", "Selecao", "Tipo", "Valor", "Status"])
+
+# Guardar em CSV para o utilizador
+df.to_csv("album.csv", index=False)
