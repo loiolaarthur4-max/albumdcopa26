@@ -1,5 +1,10 @@
 id,nome,categoria
+FWC01,Logo Oficial,FWC
+FWC02,Troféu,FWC
 BRA01,Alisson,BRASIL
+BRA02,Danilo,BRASIL
+... (continue até a BRA30)
+ARG01,Emiliano Martinez,ARGENTINA
 ...
-FWC01,Logo Oficial,ESPECIAIS
-COCA01,Coca-Cola Gold,COCA-COLA
+COCA01,Coca-Cola Gold 1,COCA-COLA
+...
