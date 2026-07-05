@@ -2,53 +2,51 @@ import streamlit as st
 import pandas as pd
 import os
 
-# Nome do arquivo de dados
 FILE_NAME = 'album.csv'
 
-# Criar arquivo se não existir
-if not os.path.exists(FILE_NAME):
-    # Aqui você usaria o CSV que geramos anteriormente
-    st.error(f"O arquivo {FILE_NAME} não foi encontrado!")
-    st.stop()
+# Configuração da página
+st.set_page_config(page_title="Organizador 2026", layout="wide")
 
-# Carregar dados
 def carregar_dados():
-    return pd.read_csv(FILE_NAME)
-
-# Salvar dados
-def salvar_dados(df):
-    df.to_csv(FILE_NAME, index=False)
+    # 'on_bad_lines="skip"' ignora linhas corrompidas
+    # 'sep=","' define a vírgula como separador
+    # 'encoding="utf-8-sig"' lida melhor com acentos/caracteres especiais
+    return pd.read_csv(FILE_NAME, sep=',', on_bad_lines='skip', encoding='utf-8-sig')
 
 st.title("⚽ Meu Álbum 2026")
 
-df = carregar_dados()
-
-# Garantir que a coluna 'Status' exista
-if 'Status' not in df.columns:
-    df['Status'] = False
-    salvar_dados(df)
-
-# Filtro por seleção
-selecao = st.sidebar.selectbox("Filtrar Seleção:", df['Selecao'].unique())
-
-st.subheader(f"Figurinhas - {selecao}")
-
-# Filtrar o DataFrame
-df_filtrado = df[df['Selecao'] == selecao].copy()
-
-# Exibir figurinhas
-for index, row in df_filtrado.iterrows():
-    col1, col2 = st.columns([4, 1])
+try:
+    df = carregar_dados()
     
-    # Exibe nome e código
-    col1.write(f"**{row['Codigo']}** - {row['Item']}")
-    
-    # Checkbox para marcar (o valor inicial vem do CSV)
-    marcado = col2.checkbox("Tenho", value=row['Status'], key=str(row['Codigo']))
-    
-    # Se mudar o checkbox, atualiza o dataframe e salva
-    if marcado != row['Status']:
-        df.loc[df['Codigo'] == row['Codigo'], 'Status'] = marcado
-        salvar_dados(df)
+    # Validação: garantir que as colunas essenciais existem
+    if 'Status' not in df.columns:
+        df['Status'] = False
+        df.to_csv(FILE_NAME, index=False, encoding='utf-8-sig')
 
-st.sidebar.success("Progresso salvo automaticamente!")
+    # Filtro por seleção (Sidebar)
+    selecao_escolhida = st.sidebar.selectbox("Filtrar por Seleção:", df['Selecao'].unique())
+
+    st.subheader(f"Figurinhas - {selecao_escolhida}")
+
+    # Filtrar o DataFrame
+    df_filtrado = df[df['Selecao'] == selecao_escolhida].copy()
+
+    # Exibir figurinhas com checkbox
+    for index, row in df_filtrado.iterrows():
+        # Usamos o 'index' original para atualizar o dataframe principal
+        orig_idx = df[df['Codigo'] == row['Codigo']].index[0]
+        
+        col1, col2 = st.columns([4, 1])
+        col1.write(f"**{row['Codigo']}** - {row['Item']}")
+        
+        # O valor do checkbox vem da coluna Status
+        novo_status = col2.checkbox("Tenho", value=bool(row['Status']), key=f"check_{row['Codigo']}")
+        
+        if novo_status != row['Status']:
+            df.at[orig_idx, 'Status'] = novo_status
+            df.to_csv(FILE_NAME, index=False, encoding='utf-8-sig')
+            st.rerun() # Recarrega para salvar o estado visual
+
+except Exception as e:
+    st.error(f"Erro ao carregar o arquivo: {e}")
+    st.write("Verifique se o arquivo album.csv está na mesma pasta e tem as colunas corretas.")
