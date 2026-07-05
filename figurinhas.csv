@@ -1,10 +1,4 @@
-id,nome,categoria
-FWC01,Logo Oficial,FWC
-FWC02,Troféu,FWC
-BRA01,Alisson,BRASIL
-BRA02,Danilo,BRASIL
-... (continue até a BRA30)
-ARG01,Emiliano Martinez,ARGENTINA
-...
-COCA01,Coca-Cola Gold 1,COCA-COLA
+Codigo,Item,Selecao,Status
+AUT1,Emblem Austria,Austria,nao_tenho
+POR15,Cristiano Ronaldo,Portugal,tenho
 ...
